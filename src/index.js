@@ -1,56 +1,64 @@
-function updateWeather(response) {
-  let temperatureElement = document.querySelector("#temperature");
-  let temperature = response.data.temperature.current;
-  let cityElement = document.querySelector("#city");
-  let descriptionElement = document.querySelector("#description");
-  let humidityElement = document.querySelector("#humidity");
-  let speedElement = document.querySelector("#speed");
-  let timeElement = document.querySelector("#time");
-  let date = new Date(response.data.time * 1000);
+const elements = {
+  temperature: document.querySelector("#temperature"),
+  city: document.querySelector("#city"),
+  description: document.querySelector("#description"),
+  humidity: document.querySelector("#humidity"),
+  speed: document.querySelector("#speed"),
+  time: document.querySelector("#time"),
+  icon: document.querySelector("#icon"),
+};
 
-  cityElement.innerHTML = response.data.city;
-  timeElement.innerHTML = formatDate(date);
-  descriptionElement.innerHTML = response.data.condition.description;
-  humidityElement.innerHTML = `${response.data.temperature.humidity}%`;
-  speedElement.innerHTML = `${response.data.wind.speed}km/h`;
-  temperatureElement.innerHTML = Math.round(temperature);
+function updateWeather(response) {
+  const {
+    city,
+    time,
+    temperature: { current, humidity },
+    wind: { speed },
+    condition: { description, icon_url },
+  } = response.data;
+
+  const date = new Date(time * 1000);
+
+  elements.icon.innerHTML = `<img src="${icon_url}" class="weather-app-icon" />`;
+  elements.city.textContent = city;
+  elements.time.textContent = formatDate(date);
+  elements.description.textContent = description;
+  elements.humidity.textContent = `${humidity}%`;
+  elements.speed.textContent = `${speed}km/h`;
+  elements.temperature.textContent = Math.round(current);
 }
 
 function formatDate(date) {
-  let minutes = date.getMinutes();
-  let hours = date.getHours();
-  let days = [
+  const days = [
     "Sunday",
     "Monday",
     "Tuesday",
     "Wednesday",
     "Thursday",
     "Friday",
-    "saturday",
+    "Saturday",
   ];
-  let day = days[date.getDay()];
-
-  if (minutes < 10) {
-    minutes = `0${minutes}`;
-  }
+  const day = days[date.getDay()];
+  const hours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, "0");
 
   return `${day} ${hours}:${minutes}`;
 }
 
 function searchCity(city) {
-  let apiKey = "3ed42bdf70af90btac454840e3c5oa26";
-  let apiUrl = `https://api.shecodes.io/weather/v1/current?query=${city}&key=${apiKey}&units=metric`;
+  const apiKey = "3ed42bdf70af90btac454840e3c5oa26";
+  const apiUrl = `https://api.shecodes.io/weather/v1/current?query=${city}&key=${apiKey}&units=metric`;
   axios.get(apiUrl).then(updateWeather);
 }
 
 function handleSearchSubmit(event) {
   event.preventDefault();
-  let searchInput = document.querySelector("#search-form-input");
-
+  const searchInput = document.querySelector("#search-form-input");
   searchCity(searchInput.value);
 }
 
-let searchFormElement = document.querySelector("#search-form");
-searchFormElement.addEventListener("submit", handleSearchSubmit);
+document
+  .querySelector("#search-form")
+  .addEventListener("submit", handleSearchSubmit);
 
 searchCity("Stockholm");
